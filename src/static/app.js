@@ -25,6 +25,10 @@ document.addEventListener("DOMContentLoaded", () => {
           <p>${details.description}</p>
           <p><strong>Schedule:</strong> ${details.schedule}</p>
           <p><strong>Availability:</strong> ${spotsLeft} spots left</p>
+          <p><strong>Participants:</strong></p>
+          <ul>
+            ${details.participants.length > 0 ? details.participants.map(p => `<li>${p} <span class="delete-participant" data-activity="${name}" data-email="${p}">×</span></li>`).join('') : '<li>No participants yet</li>'}
+          </ul>
         `;
 
         activitiesList.appendChild(activityCard);
@@ -78,6 +82,30 @@ document.addEventListener("DOMContentLoaded", () => {
       messageDiv.className = "error";
       messageDiv.classList.remove("hidden");
       console.error("Error signing up:", error);
+    }
+  });
+
+  // Handle delete participant
+  document.addEventListener('click', async (event) => {
+    if (event.target.classList.contains('delete-participant')) {
+      const activity = event.target.dataset.activity;
+      const email = event.target.dataset.email;
+
+      try {
+        const response = await fetch(`/activities/${encodeURIComponent(activity)}/participants/${encodeURIComponent(email)}`, {
+          method: 'DELETE'
+        });
+
+        if (response.ok) {
+          // Refresh the activities
+          fetchActivities();
+        } else {
+          alert('Failed to unregister participant');
+        }
+      } catch (error) {
+        console.error('Error unregistering:', error);
+        alert('Failed to unregister participant');
+      }
     }
   });
 
